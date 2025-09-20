@@ -1,0 +1,5 @@
+# Hide the environment file containing secrets
+.env
+
+# Ignore the node_modules folder
+node_modules/
