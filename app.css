@@ -1,0 +1,267 @@
+:root {
+  --bg: #0b1020;
+  --panel: #111834;
+  --text: #e5e7eb;
+  --muted: #9aa3b2;
+  --accent: #4f46e5;
+  --card: #0f172a;
+  --line: #223058;
+  --ok: #16a34a;
+  --warn: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+  background: linear-gradient(180deg, #0b1020, #0d1734);
+  color: var(--text);
+}
+
+/* ------------------- NAVBAR ------------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid #1f2a44;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar .brand {
+  position: absolute;
+  left: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.topbar .nav {
+  display: flex;
+  gap: 32px;
+}
+
+.topbar .nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  font-size: 15px;
+}
+
+.topbar .nav a:hover {
+  color: var(--text);
+}
+
+/* ------------------- MAIN LAYOUT ------------------- */
+main#app {
+  max-width: 1180px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid #263055;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(12,18,40,.35) inset;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: var(--muted);
+}
+
+p {
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-2 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* ------------------- CARDS & ELEMENTS ------------------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--accent);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--text);
+}
+
+.badge {
+  background: #1f2937;
+  color: #93c5fd;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+/* ------------------- CANVAS ------------------- */
+.canvas-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+canvas#game-canvas {
+  display: block;
+  width: 100%;
+  height: 420px;
+  background: #a4aac3;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+
+/* ------------------- PLACEHOLDER ------------------- */
+.placeholder {
+  display: grid;
+  place-items: center;
+  height: 420px;
+  border: 1px dashed #355;
+  border-radius: 16px;
+  color: var(--muted);
+  background: #0a0f22;
+}
+
+/* ------------------- CALENDAR ------------------- */
+.calendar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.cal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #0e1730;
+  border-bottom: 1px solid var(--line);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 12px;
+}
+
+.cal-dow,
+.cal-cell {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cal-cell {
+  background: #0b1530;
+  border: 1px solid #1d2a4f;
+  padding: 10px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.cal-cell:hover {
+  background: #1b2750;
+  transform: scale(1.05);
+}
+
+.cal-cell.has-entry {
+  outline: 2px solid #4ade80;
+}
+
+.cal-cell.today {
+  border-color: #64748b;
+}
+
+.cal-cell.selected {
+  outline: 2px solid #93c5fd;
+}
+
+/* ------------------- INPUTS ------------------- */
+.input,
+select,
+textarea {
+  width: 100%;
+  background: #0b1530;
+  border: 1px solid #203260;
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font: inherit;
+}
+
+label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+hr.sep {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 12px 0;
+}
+
+/* ------------------- TABLES ------------------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #203260;
+  text-align: left;
+}
