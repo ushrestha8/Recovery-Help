@@ -1,13 +1,14 @@
 :root {
-  --bg: #0b1020;
-  --panel: #111834;
-  --text: #e5e7eb;
-  --muted: #9aa3b2;
-  --accent: #4f46e5;
-  --card: #0f172a;
-  --line: #223058;
-  --ok: #16a34a;
-  --warn: #f59e0b;
+--bg: #ffffff;
+  --panel: #f3f4f6;
+  --text: #333333;
+  --muted: #777777;
+  --accent: #3498db;
+  --card: #ffffff;
+  --line: #e0e0e0;
+  --ok: #2ecc71;
+  --warn: #f39c12;
+  
 }
 
 * {
@@ -17,6 +18,9 @@
 html, body {
   height: 100%;
 }
+
+
+
 
 body {
   margin: 0;
@@ -29,9 +33,9 @@ body {
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 14px 20px;
-  background: #0f172a;
+  background: var(--card);
   border-bottom: 1px solid #1f2a44;
   position: sticky;
   top: 0;
@@ -39,8 +43,6 @@ body {
 }
 
 .topbar .brand {
-  position: absolute;
-  left: 20px;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: var(--text);
@@ -50,6 +52,8 @@ body {
 .topbar .nav {
   display: flex;
   gap: 32px;
+  justify-content: center;
+  flex-grow: 1;
 }
 
 .topbar .nav a {
@@ -144,6 +148,43 @@ p {
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 12px;
+}
+
+
+/* theme toggle*/
+body.dark-theme {
+  --bg: #0b1020;
+  --panel: #111834;
+  --text: #e5e7eb;
+  --muted: #9aa3b2;
+  --accent: #4f46e5;
+  --card: #0f172a;
+  --line: #223058;
+  --ok: #16a34a;
+  --warn: #f59e0b;
+}
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#theme-icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* Light theme specific styles */
+body.light-theme {
+  background: linear-gradient(rgb(247, 221, 248), rgb(244, 221, 165), rgb(252, 210, 144));
+}
+
+body.dark-theme{
+    background: linear-gradient(180deg, #0b1020, #0d1734);
+}
+
+.theme-container{
+    margin-left: auto;
 }
 
 /* ------------------- CANVAS ------------------- */
