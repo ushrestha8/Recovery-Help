@@ -1,7 +1,7 @@
 // The application of this game is to be used in cases
 // for hospitalized children to adults who have gone through a life-threatening
-// event such as an accident. The objective of this game is to measure and improve
-// the motor functions of a person.
+// event such as an accident. The objective of this game is to measure 
+// the motor functions of a person during the period of recovery
 //
 // This game measures three performance skills:
 // 1) Average speed: measured in seconds
