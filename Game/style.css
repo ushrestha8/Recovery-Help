@@ -8,7 +8,19 @@ body {
     justify-content: center;
     min-height: 100vh;
 }
-
+button {
+    padding: 10px 20px;
+    font-size: 0.9em;
+    background: #6c3ec1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+button:hover {
+    background: #9b5ded;
+}
 #game-container {
     background: #fff;
     border-radius: 12px;
@@ -37,19 +49,6 @@ body {
     margin: 0 auto 16px auto;
 }
 
-#next-level-btn {
-    padding: 12px 24px;
-    font-size: 1.1em;
-    background: #6c3ec1;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-#next-level-btn:hover {
-    background: #9b5ded;
-}
 #stats {
     margin-top: 18px;
     font-size: 1em;
@@ -65,23 +64,10 @@ body {
 }
 #ai-analysis-output {
     margin-top: 16px;
-    font-size: 1.1em;
+    font-size: 0.9em;
     color: #3b2d5c;
     padding: 16px;
     background: #f4f0fa;
     border-radius: 8px;
     min-height: 80px;
-}
-#analyze-btn {
-    padding: 12px 24px;
-    font-size: 1.1em;
-    background: #6c3ec1;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-#analyse-btn:hover {
-    background: #9b5ded;
 }
