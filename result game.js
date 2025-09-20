@@ -1,3 +1,8 @@
+//This is the most important change. 
+//This script now collects data over 10 levels and, 
+  //  at the end, 
+    // saves a summary object to localStorage.
+
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const levelInfo = document.getElementById('level-info');
