@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Baby Dragon Orb Feeder Game</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -14,6 +15,16 @@
         <canvas id="game-canvas" width="800" height="600"></canvas>
         <button id="next-level-btn" style="display:none;">Next Level</button>
         <div id="stats"></div>
+    </div>
+        <div id="dashboard-container" style="display:none;">
+        <h1>Session Progress</h1>
+        <div class="chart-box">
+            <canvas id="missesChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <canvas id="timeChart"></canvas>
+        </div>
+        <button id="back-to-game-btn">Back to Game</button>
     </div>
     <script src="game.js"></script>
 </body>
