@@ -1,5 +1,5 @@
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: "Lucida Bright", Georgia, serif;
     background: linear-gradient(135deg, #d0f0fc 0%, #ffe4fa 100%);
     margin: 0;
     padding: 0;
@@ -7,6 +7,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    gap: 2rem; 
 }
 button {
     padding: 10px 20px;
@@ -17,6 +18,15 @@ button {
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.2s;
+}
+input {
+    font-size: 0.9em;
+    color: #3b2d5c;
+    padding: 10px 20px;
+    background: #f4f0fa;
+    margin-top: 30px;
+    border-radius: 6px;
+    min-height: 10 px;
 }
 button:hover {
     background: #9b5ded;
@@ -53,14 +63,16 @@ button:hover {
     margin-top: 18px;
     font-size: 1em;
 }
-#correlation-container {
+#correlation-container,
+#chatbot-container {
     background: #f8f5ff;
     padding: 24px;
-    margin: 32px auto;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(108, 62, 193, 0.07);
-    width: 720px;
     text-align: center;
+    flex: 1; /* This makes both containers grow equally */
+    max-width: 720px; /* Prevents them from getting too wide */
+    margin: 32px 0; /* Use only top and bottom margin */
 }
 #ai-analysis-output {
     margin-top: 16px;

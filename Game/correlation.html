@@ -2,18 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Correlational Insights – Dragon Therapy Game</title>
+    <title>Correlational Insights & Chatbot – Dragon Therapy Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="correlation-container">
         <h1>AI Insights: Correlations in Patient Activity</h1>
-        <tr>
+        <div class="button-row">
             <button id="analyze-btn">Analyze Data for Correlations</button>
             <button id="outliers-btn">Analyze Data for Outliers</button>
-        </tr>
+        </div>
         <div id="ai-analysis-output"></div>
     </div>
+
+    <div id="chatbot-container">
+        <h1>AI Progress Chatbot</h1>
+        <div id="chatbox">
+            <div class="message system-message">
+                <p> Hello! I'm here to answer questions about the patient's progress. </p>
+                <p> You can ask me things like, "What does the range of motion data mean?" </p>
+                <p> </p>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask a question...">
+            <button id="chat-send-btn">Send</button>
+        </div>
+    </div>
+
     <script type="module" src="correlation.js"></script>
 </body>
 </html>
