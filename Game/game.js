@@ -23,11 +23,14 @@ let orbs = [];
 let draggingOrb = null;
 let dragOffset = {x:0, y:0};
 let dragon = { x: canvas.width/2, y: canvas.height/2, radius: 60 };
-let levelConfig = [
-    { orbCount: 3, orbRadius: 40, speed: 1200 },
-    { orbCount: 4, orbRadius: 30, speed: 800 },
-    { orbCount: 5, orbRadius: 25, speed: 650 }
-];
+function getLevelConfig() {
+    return {
+        orbCount: Math.min(lvl, 10),
+        orbRadius: Math.max(40-lvl*2, 20),
+        speed: Math.max(1200 - lvl *50, 500)
+    };
+}
+
 let obstacles = [];
 let colorSequence = [];
 let requiredSequenceIndex = 0;
@@ -75,7 +78,14 @@ function setupLevel(lvl) {
     colorSequence = [];
     obstacles = [];
 
-    let cfg = levelConfig[Math.min(lvl-1, levelConfig.length-1)];
+    let cfg = getLevelConfig(lvl);
+    //max level 10
+    if (lvl > 10){
+        gameActive = false;
+        levelInfo.textContent = "Congratulations! You've completed all levels!";
+        nextLevelBtn.style.display = "none";
+        return;
+    }
     // For levels 3+, add obstacles and color sequence
     if (lvl >= 3) {
         obstacles = [
@@ -263,7 +273,12 @@ function checkLevelEnd() {
         // Show stats and reward
         showStats();
         giveReward();
-        nextLevelBtn.style.display = "inline-block";
+        //stop showing next level button if max level reached
+        if (level < 10) {
+            nextLevelBtn.style.display = "inline-block";
+        }else{
+            nextLevelBtn.style.display = "none";
+        }
     }
 }
 
@@ -286,9 +301,11 @@ function giveReward() {
 
 // Next level button
 nextLevelBtn.addEventListener('click', () => {
-    level++;
-    setupLevel(level);
-    requestAnimationFrame(gameLoop);
+    if (level < 10){
+        level++;
+        setupLevel(level);
+        requestAnimationFrame(gameLoop);
+    }
 });
 
 // Initial game setup
