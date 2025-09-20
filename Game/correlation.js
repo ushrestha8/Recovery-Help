@@ -1,3 +1,4 @@
+// Sample patient data used for testing the AI Integration
 const patientData = [
     { session: 1, avgTime: 3.5, errors: 7, range: 4 },
     { session: 2, avgTime: 3.1, errors: 5, range: 5 },
