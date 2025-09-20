@@ -31,7 +31,7 @@ input {
 button:hover {
     background: #9b5ded;
 }
-#game-container {
+#game-container, #dashboard-container {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.18);
@@ -82,4 +82,7 @@ button:hover {
     background: #f4f0fa;
     border-radius: 8px;
     min-height: 80px;
+}
+.chart-box {
+    margin-top: 25px;
 }
