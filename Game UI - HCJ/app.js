@@ -345,4 +345,3 @@ toggleButton.addEventListener('click', () => {
         themeIcon.alt = 'Light theme';
     }
 });
-
