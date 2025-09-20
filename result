@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dragon Therapy</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Feed the Baby Dragon!</h1>
+        <div id="level-info">Level: 1 of 10</div>
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        
+        <button id="next-level-btn" style="display:none;">Next Level</button>
+        
+        <button id="view-dashboard-btn" style="display:none;">View Progress Dashboard</button>
+        
+        <div id="stats"></div>
+    </div>
+
+    <script>
+        document.getElementById('view-dashboard-btn').addEventListener('click', () => {
+            window.location.href = 'results.html';
+        });
+    </script>
+    <script src="game.js"></script>
+</body>
+</html>
