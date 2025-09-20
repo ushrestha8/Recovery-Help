@@ -1,0 +1,57 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #d0f0fc 0%, #ffe4fa 100%);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+#game-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    padding: 24px;
+    text-align: center;
+    width: 840px;
+}
+
+#level-info {
+    font-size: 1.3em;
+    margin-bottom: 12px;
+}
+
+#reward-info {
+    margin: 12px 0;
+    font-size: 1.1em;
+    color: #6c3ec1;
+}
+
+#game-canvas {
+    background: #e0f4f8;
+    border: 2px solid #b1d0e0;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 16px auto;
+}
+
+#next-level-btn {
+    padding: 12px 24px;
+    font-size: 1.1em;
+    background: #6c3ec1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#next-level-btn:hover {
+    background: #9b5ded;
+}
+
+#stats {
+    margin-top: 18px;
+    font-size: 1em;
+}
