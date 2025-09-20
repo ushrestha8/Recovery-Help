@@ -53,22 +53,143 @@ let rewards = [
 let currentReward = null;
 let gameActive = false;
 
+// ---- Geometry helpers for spawn/path checks ----
+function lineIntersectsRect(x1, y1, x2, y2, rx, ry, rw, rh) {
+  // Segment/rectangle intersection by checking segment vs. each rect edge
+  function segSeg(ax, ay, bx, by, cx, cy, dx, dy) {
+    const s1x = bx - ax, s1y = by - ay;
+    const s2x = dx - cx, s2y = dy - cy;
+    const denom = (s2x * s1y - s2y * s1x);
+    if (denom === 0) return false;
+    const s = (-s1y * (ax - cx) + s1x * (ay - cy)) / denom;
+    const t = ( s2x * (ay - cy) - s2y * (ax - cx)) / denom;
+    return s >= 0 && s <= 1 && t >= 0 && t <= 1;
+  }
+  const left   = segSeg(x1,y1,x2,y2, rx,    ry,     rx,    ry+rh);
+  const right  = segSeg(x1,y1,x2,y2, rx+rw, ry,     rx+rw, ry+rh);
+  const top    = segSeg(x1,y1,x2,y2, rx,    ry,     rx+rw, ry);
+  const bottom = segSeg(x1,y1,x2,y2, rx,    ry+rh,  rx+rw, ry+rh);
+  const inside = (x1 >= rx && x1 <= rx+rw && y1 >= ry && y1 <= ry+rh);
+  return inside || left || right || top || bottom;
+}
+
+// Returns true if the segment (x1,y1)->(x2,y2) crosses any rectangle in `rects`
+function segmentHitsAnyRect(x1, y1, x2, y2, rects) {
+  function segSeg(ax, ay, bx, by, cx, cy, dx, dy) {
+    const s1x = bx - ax, s1y = by - ay;
+    const s2x = dx - cx, s2y = dy - cy;
+    const denom = (s2x * s1y - s2y * s1x);
+    if (denom === 0) return false;
+    const s = (-s1y * (ax - cx) + s1x * (ay - cy)) / denom;
+    const t = ( s2x * (ay - cy) - s2y * (ax - cx)) / denom;
+    return s >= 0 && s <= 1 && t >= 0 && t <= 1;
+  }
+  for (const r of rects) {
+    const rx=r.x, ry=r.y, rw=r.w, rh=r.h;
+    if (segSeg(x1,y1,x2,y2, rx,ry, rx,ry+rh)) return true;        // left
+    if (segSeg(x1,y1,x2,y2, rx+rw,ry, rx+rw,ry+rh)) return true;  // right
+    if (segSeg(x1,y1,x2,y2, rx,ry, rx+rw,ry)) return true;        // top
+    if (segSeg(x1,y1,x2,y2, rx,ry+rh, rx+rw,ry+rh)) return true;  // bottom
+    // Also early accept if start is inside the rect
+    if (x1 >= rx && x1 <= rx+rw && y1 >= ry && y1 <= ry+rh) return true;
+  }
+  return false;
+}
+
+
 // Utility
 function randomPos(radius) {
-    // Place orbs in corners and random locations
-    const positions = [
-        {x: radius+10, y: radius+10},
-        {x: canvas.width-radius-10, y: radius+10},
-        {x: radius+10, y: canvas.height-radius-10},
-        {x: canvas.width-radius-10, y: canvas.height-radius-10}
-    ];
-    if (orbs.length < 4) return positions[orbs.length];
-    // Random anywhere
-    return {
-        x: Math.random() * (canvas.width-radius*2) + radius,
-        y: Math.random() * (canvas.height-radius*2) + radius
-    };
+  // Keep away from dragon, other orbs, and moving obstacles; ensure a clear ray to the dragon.
+  const EXCLUDE_R = dragon.radius + Math.max(70, radius + 24); // bigger safe bubble around dragon
+  const ORB_PAD   = 10;    // gap vs other orbs
+  const OB_PAD    = radius + 24; // inflate obstacles generously
+  const MOVE_PAD  = 30;    // widen obstacles along movement axis (horizontal in your game)
+
+  // Build inflated obstacle list once per call
+  const inflated = obstacles.map(o => {
+    // assume horizontal motion: widen along X
+    return { x: o.x - (OB_PAD + MOVE_PAD), y: o.y - OB_PAD, w: o.w + 2*(OB_PAD + MOVE_PAD), h: o.h + 2*OB_PAD };
+  });
+
+  function overlapsExisting(x, y) {
+    for (const o of orbs) {
+      if (!o.fed) {
+        const dx = x - o.x, dy = y - o.y;
+        const minD = (radius + o.radius + ORB_PAD);
+        if (dx*dx + dy*dy < minD*minD) return true;
+      }
+    }
+    return false;
+  }
+
+  function insideInflatedObstacle(x, y) {
+    return inflated.some(r =>
+      x + radius > r.x && x - radius < r.x + r.w &&
+      y + radius > r.y && y - radius < r.y + r.h
+    );
+  }
+
+  function hasClearRayToDragon(x, y) {
+    // test multiple target points on dragon’s perimeter; if ANY ray is clear, we’re good
+    const R = Math.max(10, dragon.radius - 8);
+    const samples = 12; // 30° steps
+    for (let k = 0; k < samples; k++) {
+      const a = (Math.PI * 2) * (k / samples);
+      const tx = dragon.x + R * Math.cos(a);
+      const ty = dragon.y + R * Math.sin(a);
+      if (!segmentHitsAnyRect(x, y, tx, ty, inflated)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  for (let tries = 0; tries < 300; tries++) {
+    const x = radius + 12 + Math.random() * (canvas.width  - 2*radius - 24);
+    const y = radius + 12 + Math.random() * (canvas.height - 2*radius - 24);
+
+    // keep a clear space around dragon center
+    const dx = x - dragon.x, dy = y - dragon.y;
+    if ((dx*dx + dy*dy) < EXCLUDE_R*EXCLUDE_R) continue;
+
+    if (insideInflatedObstacle(x, y)) continue;
+    if (overlapsExisting(x, y)) continue;
+    if (!hasClearRayToDragon(x, y)) continue;
+
+    return { x, y };
+  }
+
+  // Fallback along edges (prefers top/bottom edges with smallest obstacle footprint)
+  for (let tries = 0; tries < 50; tries++) {
+    const x = radius + 12 + Math.random() * (canvas.width  - 2*radius - 24);
+    const y = (Math.random() < 0.5) ? (radius + 12) : (canvas.height - radius - 12);
+    const dx = x - dragon.x, dy = y - dragon.y;
+    if ((dx*dx + dy*dy) < EXCLUDE_R*EXCLUDE_R) continue;
+    if (insideInflatedObstacle(x, y)) continue;
+    if (overlapsExisting(x, y)) continue;
+    if (!hasClearRayToDragon(x, y)) continue;
+    return { x, y };
+  }
+
+  // Last resort: fixed corners
+  const corners = [
+    { x: radius + 16, y: radius + 16 },
+    { x: canvas.width - radius - 16, y: radius + 16 },
+    { x: radius + 16, y: canvas.height - radius - 16 },
+    { x: canvas.width - radius - 16, y: canvas.height - radius - 16 },
+  ];
+  for (const c of corners) {
+    const dx = c.x - dragon.x, dy = c.y - dragon.y;
+    if ((dx*dx + dy*dy) < EXCLUDE_R*EXCLUDE_R) continue;
+    if (insideInflatedObstacle(c.x, c.y)) continue;
+    if (overlapsExisting(c.x, c.y)) continue;
+    if (!hasClearRayToDragon(c.x, c.y)) continue;
+    return c;
+  }
+  // If absolutely nothing fits (extremely rare), drop anywhere and let gameplay handle it
+  return { x: dragon.x + EXCLUDE_R + radius + 5, y: radius + 20 };
 }
+
 
 function setupLevel(lvl) {
     if (typeof MAX_LEVEL !== 'undefined' && lvl > MAX_LEVEL) {
@@ -151,33 +272,76 @@ function drawGame() {
         ctx.restore();
     });
 
-    // Orbs
-    orbs.forEach((orb, i) => {
-        if (!orb.fed) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(orb.x, orb.y, orb.radius, 0, 2*Math.PI);
-            ctx.fillStyle = orb.color;
-            ctx.shadowColor = "#fff";
-            ctx.shadowBlur = 20;
-            ctx.fill();
-            ctx.restore();
-            ctx.save();
-            ctx.font = "18px Arial";
-            ctx.fillStyle = "#333";
-            ctx.textAlign = "center";
-            ctx.fillText("✨", orb.x, orb.y+7);
-            ctx.restore();
-            // If color sequence needed
-            if (level >= 3) {
-                ctx.save();
-                ctx.font = "12px Arial";
-                ctx.fillStyle = "#222";
-                ctx.textAlign = "center";
-                ctx.fillText(`${i+1}`, orb.x, orb.y-orb.radius-8);
-                ctx.restore();
-            }
-        }
+    // ---- Color helpers for prettier orbs ----
+function hexToRgb(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return {r:255,g:215,b:0};
+  return { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) };
+}
+function rgbToHex(r,g,b){
+  const c = v => ('0' + Math.max(0,Math.min(255, Math.round(v))).toString(16)).slice(-2);
+  return '#' + c(r)+c(g)+c(b);
+}
+function lighten(hex, amt=0.2){
+  const {r,g,b} = hexToRgb(hex);
+  return rgbToHex(r + (255 - r)*amt, g + (255 - g)*amt, b + (255 - b)*amt);
+}
+function darken(hex, amt=0.2){
+  const {r,g,b} = hexToRgb(hex);
+  return rgbToHex(r*(1-amt), g*(1-amt), b*(1-amt));
+}
+function luminance(hex){
+  const {r,g,b} = hexToRgb(hex);
+  const a = [r,g,b].map(v => {
+    v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+  });
+  return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2];
+}
+function idealTextColor(bgHex){ return luminance(bgHex) > 0.5 ? '#111' : '#fff'; }
+
+// Orbs
+orbs.forEach((orb, i) => {
+  if (!orb.fed) {
+    const base = orb.color || '#ffd700';
+    const lighter = lighten(base, 0.35);
+    const darker  = darken(base, 0.35);
+    const grad = ctx.createRadialGradient(
+      orb.x - orb.radius*0.35, orb.y - orb.radius*0.35, orb.radius*0.2,
+      orb.x, orb.y, orb.radius
+    );
+    grad.addColorStop(0, lighter);
+    grad.addColorStop(1, base);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.shadowColor = lighter;
+    ctx.shadowBlur = 18;
+    ctx.fill();
+
+    // Rim
+    ctx.lineWidth = Math.max(2, orb.radius*0.12);
+    ctx.strokeStyle = darker;
+    ctx.stroke();
+
+    // Gloss
+    ctx.beginPath();
+    ctx.arc(orb.x - orb.radius*0.35, orb.y - orb.radius*0.35, orb.radius*0.35, 0, Math.PI*2);
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Number INSIDE the orb (1-based)
+    const label = String((orb.id ?? i) + 1);
+    ctx.font = `${Math.round(orb.radius * 0.9)}px Arial`;
+    ctx.fillStyle = idealTextColor(base);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, orb.x, orb.y + (orb.radius * 0.03));
+    ctx.restore();
+  }
     });
 }
 
