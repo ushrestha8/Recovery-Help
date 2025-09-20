@@ -23,11 +23,14 @@ let orbs = [];
 let draggingOrb = null;
 let dragOffset = {x:0, y:0};
 let dragon = { x: canvas.width/2, y: canvas.height/2, radius: 60 };
-function getLevelConfig() {
+const MAX_LEVEL = 10;
+
+// Dynamic level scaling function
+function getLevelConfig(lvl) {
     return {
-        orbCount: Math.min(lvl, 10),
-        orbRadius: Math.max(40-lvl*2, 20),
-        speed: Math.max(1200 - lvl *50, 500)
+        orbCount: Math.min(lvl, MAX_LEVEL),   // Level 1 -> 1 orb, up to 10
+        orbRadius: Math.max(40 - lvl * 2, 20),
+        speed: Math.max(1200 - lvl * 50, 500)
     };
 }
 
@@ -68,6 +71,12 @@ function randomPos(radius) {
 }
 
 function setupLevel(lvl) {
+    if (typeof MAX_LEVEL !== 'undefined' && lvl > MAX_LEVEL) {
+        gameActive = false;
+        nextLevelBtn.style.display = 'none';
+        statsDiv.textContent = "🎉 Congratulations! You've completed all 10 levels!";
+        return;
+    }
     gameActive = true;
     orbs = [];
     stats.speed = [];
@@ -79,20 +88,13 @@ function setupLevel(lvl) {
     obstacles = [];
 
     let cfg = getLevelConfig(lvl);
-    //max level 10
-    if (lvl > 10){
-        gameActive = false;
-        levelInfo.textContent = "Congratulations! You've completed all levels!";
-        nextLevelBtn.style.display = "none";
-        return;
-    }
     // For levels 3+, add obstacles and color sequence
     if (lvl >= 3) {
         obstacles = [
             {x: 320, y: 180, w: 80, h: 160, dx: 2, dir: 1},
             {x: 520, y: 330, w: 80, h: 100, dx: -2, dir: -1}
         ];
-        // Add color sequence
+        /// Add color sequence
         let colors = ['#ffd700','#00e6ff','#ff6b81'];
         for (let i=0; i<cfg.orbCount; i++) {
             colorSequence.push(colors[i % colors.length]);
@@ -273,11 +275,11 @@ function checkLevelEnd() {
         // Show stats and reward
         showStats();
         giveReward();
-        //stop showing next level button if max level reached
-        if (level < 10) {
+        if (level < MAX_LEVEL) {
             nextLevelBtn.style.display = "inline-block";
-        }else{
+        } else {
             nextLevelBtn.style.display = "none";
+            statsDiv.textContent += "🎉 Congratulations! You've completed all 10 levels!";
         }
     }
 }
@@ -301,7 +303,7 @@ function giveReward() {
 
 // Next level button
 nextLevelBtn.addEventListener('click', () => {
-    if (level < 10){
+    if (level < MAX_LEVEL) {
         level++;
         setupLevel(level);
         requestAnimationFrame(gameLoop);
