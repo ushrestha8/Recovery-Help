@@ -323,3 +323,26 @@ function renderWellbeingBars(entries){
     </div>`;
   }).join('');
 }
+
+//theme toggle icon
+const toggleButton = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
+let isDark = false;
+
+toggleButton.addEventListener('click', () => {
+    isDark = !isDark;
+    
+    // Toggle the dark theme class on the body
+    document.body.classList.toggle('dark-theme', isDark);
+    document.body.classList.toggle('light-theme', !isDark);
+
+    // Change the icon based on the theme
+    if (isDark) {
+        themeIcon.src = "./img/mode.png";  // Dark theme icon
+        themeIcon.alt = 'Dark theme';
+    } else {
+        themeIcon.src = "./img/dark-mode.png";  // Light theme icon
+        themeIcon.alt = 'Light theme';
+    }
+});
+
