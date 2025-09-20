@@ -415,11 +415,17 @@ function collidesWithObstacle(x, y, radius) {
 }
 
 function checkLevelEnd() {
-  if (orbs.every(o=>o.fed)) {
-    gameActive = false;
-    // Show stats and reward
-    showStats();
-    giveReward();
+    if (orbs.every(o => o.fed)) {
+        gameActive = false;
+        showStats();
+        // Show the correct button depending on if the game is over
+        if (level < levelConfig.length) {
+            nextLevelBtn.style.display = "inline-block";
+        }
+        // Always show the dashboard button after a level is complete
+        viewDashboardBtn.style.display = "inline-block";
+    }
+}
     if (level < MAX_LEVEL) {
       if (nextLevelBtn) nextLevelBtn.style.display = "inline-block";
     } else {
@@ -429,18 +435,32 @@ function checkLevelEnd() {
   }
 }
 
+// function showStats() {
+//  let speedAvg = stats.speed.length > 0 ? (stats.speed.reduce((a,b)=>a+b,0)/stats.speed.length).toFixed(2) : 0;
+//  let range = stats.rangeOfMotion.size;
+//  let acc = stats.accuracy;
+//  if (statsDiv) {
+//    statsDiv.innerHTML = `
+//      <strong>Performance:</strong><br>
+//      Average Speed: <b>${speedAvg}s</b><br>
+//      Misses/Errors: <b>${acc}</b><br>
+//      Range of Motion: <b>${range} zones</b>
+//    `;
+//  }
+//}
 function showStats() {
-  let speedAvg = stats.speed.length > 0 ? (stats.speed.reduce((a,b)=>a+b,0)/stats.speed.length).toFixed(2) : 0;
-  let range = stats.rangeOfMotion.size;
-  let acc = stats.accuracy;
-  if (statsDiv) {
+    let speedAvg = stats.speed.length > 0 ? (stats.speed.reduce((a, b) => a + b, 0) / stats.speed.length).toFixed(2) : 0;
     statsDiv.innerHTML = `
-      <strong>Performance:</strong><br>
-      Average Speed: <b>${speedAvg}s</b><br>
-      Misses/Errors: <b>${acc}</b><br>
-      Range of Motion: <b>${range} zones</b>
+        <strong>Level ${level} Complete!</strong><br>
+        Average Speed: <b>${speedAvg}s</b> | Misses/Errors: <b>${stats.accuracy}</b>
     `;
-  }
+
+    // --- ADD THESE LINES to save the level results ---
+    levelHistory.push({
+        level: level,
+        misses: stats.accuracy,
+        avgTime: parseFloat(speedAvg)
+    });
 }
 
 function giveReward() {
@@ -484,7 +504,14 @@ window.initInjuryGame = function () {
     return;
   }
   ctx = canvas.getContext('2d');
+const viewDashboardBtn = document.getElementById('view-dashboard-btn');
+const backToGameBtn = document.getElementById('back-to-game-btn');
+const gameContainer = document.getElementById('game-container');
+const dashboardContainer = document.getElementById('dashboard-container');
 
+// --- ADD THIS ARRAY to store results from each level ---
+let levelHistory = [];
+let missesChart, timeChart; // To hold our chart instances
   // Center dragon based on current canvas size
   dragon.x = canvas.width / 2;
   dragon.y = canvas.height / 2;
@@ -495,7 +522,57 @@ window.initInjuryGame = function () {
   } else {
     level = 1;
   }
+// Functions to show/hide the dashboard
+viewDashboardBtn.addEventListener('click', () => {
+    gameContainer.style.display = 'none';
+    dashboardContainer.style.display = 'block';
+    renderCharts(); // Draw the charts when dashboard is viewed
+});
 
+backToGameBtn.addEventListener('click', () => {
+    dashboardContainer.style.display = 'none';
+    gameContainer.style.display = 'block';
+});
+
+// Function to draw the graphs
+function renderCharts() {
+    const labels = levelHistory.map(h => `Level ${h.level}`);
+    const missesData = levelHistory.map(h => h.misses);
+    const timeData = levelHistory.map(h => h.avgTime);
+
+    if (missesChart) missesChart.destroy();
+    if (timeChart) timeChart.destroy();
+
+    const missesCtx = document.getElementById('missesChart').getContext('2d');
+    missesChart = new Chart(missesCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Misses / Errors per Level',
+                data: missesData,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true, tension: 0.1
+            }]
+        }
+    });
+
+    const timeCtx = document.getElementById('timeChart').getContext('2d');
+    timeChart = new Chart(timeCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Time per Orb (seconds)',
+                data: timeData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true, tension: 0.1
+            }]
+        }
+    });
+}
   // Bind inputs once, then (re)start the game
   bindDomOnce();
   setupLevel(level);
