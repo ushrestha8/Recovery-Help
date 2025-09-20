@@ -9,7 +9,7 @@
 // 3) Range of Motion: Identifies the zones that the patient goes to retrieve an element to be scored
 
 // ---------------- DOM refs are set inside initInjuryGame() ----------------
-let canvas, ctx, levelInfo, rewardInfo, nextLevelBtn, statsDiv;
+let canvas, ctx, levelInfo, rewardInfo, nextLevelBtn, statsDiv, viewDashboardBtn, backToGameBtn, gameContainer, dashboardContainer;
 
 // Game variables (kept global so handlers can access)
 let level = 1;
@@ -18,6 +18,8 @@ let draggingOrb = null;
 let dragOffset = {x:0, y:0};
 let dragon = { x: 480, y: 270, radius: 60 }; // will be updated once canvas exists
 const MAX_LEVEL = 10;
+let levelHistory = [];
+let missesChart, timeChart;
 
 // Dynamic level scaling function
 function getLevelConfig(lvl) {
@@ -418,36 +420,22 @@ function checkLevelEnd() {
     if (orbs.every(o => o.fed)) {
         gameActive = false;
         showStats();
-        // Show the correct button depending on if the game is over
-        if (level < levelConfig.length) {
+        giveReward();
+        
+        if (level < MAX_LEVEL) {
             nextLevelBtn.style.display = "inline-block";
+        } else {
+            nextLevelBtn.style.display = "none";
+            statsDiv.textContent += "🎉 Congratulations! You've completed all 10 levels!";
         }
-        // Always show the dashboard button after a level is complete
-        viewDashboardBtn.style.display = "inline-block";
+        
+        // Ensure the viewDashboardBtn exists before trying to access it
+        if (viewDashboardBtn) {
+          viewDashboardBtn.style.display = "inline-block";
+        }
     }
-}
-    if (level < MAX_LEVEL) {
-      if (nextLevelBtn) nextLevelBtn.style.display = "inline-block";
-    } else {
-      if (nextLevelBtn) nextLevelBtn.style.display = "none";
-      if (statsDiv) statsDiv.textContent += "🎉 Congratulations! You've completed all 10 levels!";
-    }
-  }
 }
 
-// function showStats() {
-//  let speedAvg = stats.speed.length > 0 ? (stats.speed.reduce((a,b)=>a+b,0)/stats.speed.length).toFixed(2) : 0;
-//  let range = stats.rangeOfMotion.size;
-//  let acc = stats.accuracy;
-//  if (statsDiv) {
-//    statsDiv.innerHTML = `
-//      <strong>Performance:</strong><br>
-//      Average Speed: <b>${speedAvg}s</b><br>
-//      Misses/Errors: <b>${acc}</b><br>
-//      Range of Motion: <b>${range} zones</b>
-//    `;
-//  }
-//}
 function showStats() {
     let speedAvg = stats.speed.length > 0 ? (stats.speed.reduce((a, b) => a + b, 0) / stats.speed.length).toFixed(2) : 0;
     statsDiv.innerHTML = `
@@ -455,7 +443,6 @@ function showStats() {
         Average Speed: <b>${speedAvg}s</b> | Misses/Errors: <b>${stats.accuracy}</b>
     `;
 
-    // --- ADD THESE LINES to save the level results ---
     levelHistory.push({
         level: level,
         misses: stats.accuracy,
@@ -487,64 +474,46 @@ function bindDomOnce() {
       }
     });
   }
+  // Listeners for dashboard buttons
+  if (viewDashboardBtn) {
+      viewDashboardBtn.addEventListener('click', () => {
+          gameContainer.style.display = 'none';
+          dashboardContainer.style.display = 'block';
+          renderCharts();
+      });
+  }
+  if (backToGameBtn) {
+      backToGameBtn.addEventListener('click', () => {
+          dashboardContainer.style.display = 'none';
+          gameContainer.style.display = 'block';
+      });
+  }
   _listenersBound = true;
 }
 
-// ---------------- PUBLIC INIT (call this from Dashboard) ----------------
-window.initInjuryGame = function () {
-  // Look up DOM every time in case the Dashboard re-rendered
-  canvas = document.getElementById('game-canvas');
-  levelInfo = document.getElementById('level-info');
-  rewardInfo = document.getElementById('reward-info');
-  nextLevelBtn = document.getElementById('next-level-btn');
-  statsDiv = document.getElementById('stats');
-
-  if (!canvas) {
-    console.error('Game canvas not found. Ensure #game-canvas exists on the Dashboard.');
-    return;
-  }
-  ctx = canvas.getContext('2d');
-const viewDashboardBtn = document.getElementById('view-dashboard-btn');
-const backToGameBtn = document.getElementById('back-to-game-btn');
-const gameContainer = document.getElementById('game-container');
-const dashboardContainer = document.getElementById('dashboard-container');
-
-// --- ADD THIS ARRAY to store results from each level ---
-let levelHistory = [];
-let missesChart, timeChart; // To hold our chart instances
-  // Center dragon based on current canvas size
-  dragon.x = canvas.width / 2;
-  dragon.y = canvas.height / 2;
-
-  // Optional: respect preset start level
-  if (typeof window.__IRT_START_LEVEL === 'number') {
-    level = Math.max(1, Math.min(10, window.__IRT_START_LEVEL));
-  } else {
-    level = 1;
-  }
-// Functions to show/hide the dashboard
-viewDashboardBtn.addEventListener('click', () => {
-    gameContainer.style.display = 'none';
-    dashboardContainer.style.display = 'block';
-    renderCharts(); // Draw the charts when dashboard is viewed
-});
-
-backToGameBtn.addEventListener('click', () => {
-    dashboardContainer.style.display = 'none';
-    gameContainer.style.display = 'block';
-});
-
 // Function to draw the graphs
 function renderCharts() {
+    // Make sure the Chart.js library is loaded
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js library is not loaded. Please include it in your HTML.');
+        return;
+    }
     const labels = levelHistory.map(h => `Level ${h.level}`);
     const missesData = levelHistory.map(h => h.misses);
     const timeData = levelHistory.map(h => h.avgTime);
 
     if (missesChart) missesChart.destroy();
     if (timeChart) timeChart.destroy();
+    
+    // Check if the canvas elements for charts exist
+    const missesCtx = document.getElementById('missesChart');
+    const timeCtx = document.getElementById('timeChart');
+    if (!missesCtx || !timeCtx) {
+        console.error('Chart canvas elements not found. Please ensure #missesChart and #timeChart exist.');
+        return;
+    }
 
-    const missesCtx = document.getElementById('missesChart').getContext('2d');
-    missesChart = new Chart(missesCtx, {
+    missesChart = new Chart(missesCtx.getContext('2d'), {
         type: 'line',
         data: {
             labels: labels,
@@ -558,8 +527,7 @@ function renderCharts() {
         }
     });
 
-    const timeCtx = document.getElementById('timeChart').getContext('2d');
-    timeChart = new Chart(timeCtx, {
+    timeChart = new Chart(timeCtx.getContext('2d'), {
         type: 'line',
         data: {
             labels: labels,
@@ -573,17 +541,39 @@ function renderCharts() {
         }
     });
 }
+
+// ---------------- PUBLIC INIT (call this from Dashboard) ----------------
+window.initInjuryGame = function () {
+  // Look up DOM every time in case the Dashboard re-rendered
+  canvas = document.getElementById('game-canvas');
+  levelInfo = document.getElementById('level-info');
+  rewardInfo = document.getElementById('reward-info');
+  nextLevelBtn = document.getElementById('next-level-btn');
+  statsDiv = document.getElementById('stats');
+  viewDashboardBtn = document.getElementById('view-dashboard-btn');
+  backToGameBtn = document.getElementById('back-to-game-btn');
+  gameContainer = document.getElementById('game-container');
+  dashboardContainer = document.getElementById('dashboard-container');
+
+  if (!canvas) {
+    console.error('Game canvas not found. Ensure #game-canvas exists on the Dashboard.');
+    return;
+  }
+  ctx = canvas.getContext('2d');
+
+  // Center dragon based on current canvas size
+  dragon.x = canvas.width / 2;
+  dragon.y = canvas.height / 2;
+
+  // Optional: respect preset start level
+  if (typeof window.__IRT_START_LEVEL === 'number') {
+    level = Math.max(1, Math.min(10, window.__IRT_START_LEVEL));
+  } else {
+    level = 1;
+  }
   // Bind inputs once, then (re)start the game
   bindDomOnce();
   setupLevel(level);
   gameActive = true;
   requestAnimationFrame(gameLoop);
 };
-
-// ---------------- IMPORTANT ----------------
-// Remove the old auto-start lines that were at the bottom:
-//   setupLevel(level);
-//   requestAnimationFrame(gameLoop);
-//
-// The game now starts when your Dashboard calls:
-//   if (typeof window.initInjuryGame === 'function') window.initInjuryGame();
