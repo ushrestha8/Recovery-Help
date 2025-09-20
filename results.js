@@ -1,3 +1,8 @@
+//Finally, this script no longer uses sample data. 
+//It reads directly from localStorage, 
+  //  ensuring the charts always show the real,
+    //up-to-date user data.
+
 // This function runs when the results page has finished loading.
 window.onload = function() {
     
