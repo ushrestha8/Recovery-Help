@@ -50,8 +50,38 @@ body {
 #next-level-btn:hover {
     background: #9b5ded;
 }
-
 #stats {
     margin-top: 18px;
     font-size: 1em;
+}
+#correlation-container {
+    background: #f8f5ff;
+    padding: 24px;
+    margin: 32px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(108, 62, 193, 0.07);
+    width: 720px;
+    text-align: center;
+}
+#ai-analysis-output {
+    margin-top: 16px;
+    font-size: 1.1em;
+    color: #3b2d5c;
+    padding: 16px;
+    background: #f4f0fa;
+    border-radius: 8px;
+    min-height: 80px;
+}
+#analyze-btn {
+    padding: 12px 24px;
+    font-size: 1.1em;
+    background: #6c3ec1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#analyse-btn:hover {
+    background: #9b5ded;
 }
